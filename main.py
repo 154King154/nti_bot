@@ -2,12 +2,12 @@ from telegram_token import token
 from config import reply_texts
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler, ConversationHandler
-import requests
-import re
 import logging
+import re
+import requests
 
 REQUEST_KWARGS = {
-    'proxy_url': 'socks4://95.179.200.239:30963',
+    'proxy_url': 'socks4://85.75.198.12:4145',
     # Optional, if you need authentication:
     # 'username': 'PROXY_USER',
     # 'password': 'PROXY_PASS',
@@ -16,12 +16,13 @@ REQUEST_KWARGS = {
 # Stages
 FIRST = 0
 # Callback data
-ONE, TWO, THREE = range(3)
+ONE, TWO, THREE, FOUR = range(4)
 
 def start(bot, update):
     keyboard = [
         [InlineKeyboardButton("Обучение", callback_data=str(ONE)),
-         InlineKeyboardButton("Адаптация", callback_data=str(TWO))]
+         InlineKeyboardButton("Адаптация", callback_data=str(TWO)),
+         InlineKeyboardButton("О нас", callback_data=str(FOUR))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -35,13 +36,16 @@ def learn(bot, update):
     query.answer()
     keyboard = [
         [InlineKeyboardButton("В начало", callback_data=str(THREE)),
-         InlineKeyboardButton("Адаптация", callback_data=str(TWO))]
+         InlineKeyboardButton("Адаптация", callback_data=str(TWO)),
+         InlineKeyboardButton("О нас", callback_data=str(FOUR))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    query.edit_message_text(
-        text=reply_texts['learn_message_1'],
-        reply_markup=reply_markup
-    )
+    query.message.reply_text(reply_texts['learn_message_1'])
+    query.message.reply_text(reply_texts['learn_message_2'], reply_markup=reply_markup)
+    #query.edit_message_text(
+    #    text=reply_texts['learn_message_1'],
+    #    reply_markup=reply_markup
+    #)
     return FIRST
 
 def adaptation(bot, update):
@@ -49,13 +53,33 @@ def adaptation(bot, update):
     query.answer()
     keyboard = [
         [InlineKeyboardButton("В начало", callback_data=str(THREE)),
-         InlineKeyboardButton("Обучение", callback_data=str(ONE))]
+         InlineKeyboardButton("Обучение", callback_data=str(ONE)),
+         InlineKeyboardButton("О нас", callback_data=str(FOUR))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    query.edit_message_text(
-        text=reply_texts['adaptation_message_1'],
-        reply_markup=reply_markup
-    )
+    query.message.reply_text(reply_texts['adaptation_message_1'])
+    query.message.reply_text(reply_texts['adaptation_message_2'], reply_markup=reply_markup)
+    #query.edit_message_text(
+    #    text=reply_texts['adaptation_message_1'],
+    #    reply_markup=reply_markup
+    #)
+    return FIRST
+
+def about(bot, update):
+    query = update.callback_query
+    query.answer()
+    keyboard = [
+        [InlineKeyboardButton("В начало", callback_data=str(THREE)),
+         InlineKeyboardButton("Обучение", callback_data=str(ONE)),
+         InlineKeyboardButton("Адаптация", callback_data=str(TWO))]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    query.message.reply_text(reply_texts['about_message_1'])
+    query.message.reply_text(reply_texts['about_message_2'], reply_markup=reply_markup)
+    #query.edit_message_text(
+    #    text=reply_texts['a_message_1'],
+    #    reply_markup=reply_markup
+    #)
     return FIRST
 
 def start_again(bot, update):
@@ -63,13 +87,16 @@ def start_again(bot, update):
     query.answer()
     keyboard = [
         [InlineKeyboardButton("Обучение", callback_data=str(ONE)),
-         InlineKeyboardButton("Адаптация", callback_data=str(TWO))]
+         InlineKeyboardButton("Адаптация", callback_data=str(TWO)),
+         InlineKeyboardButton("О нас", callback_data=str(FOUR))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    query.edit_message_text(
-        text=reply_texts['start_again_message'],
-        reply_markup=reply_markup
-    )
+    query.message.reply_text(reply_texts['start_again_message_1'])
+    query.message.reply_text(reply_texts['start_again_message_2'], reply_markup=reply_markup)
+    #query.edit_message_text(
+    #    text=reply_texts['start_again_message'],
+    #    reply_markup=reply_markup
+    #)
     return FIRST
 
 def main():
@@ -83,11 +110,13 @@ def main():
         entry_points=[CommandHandler('start', start),
                       CommandHandler('learn', learn),
                       CommandHandler('adaptation', adaptation),
-                      CommandHandler('start_again', start_again)],
+                      CommandHandler('start_again', start_again),
+                      CommandHandler('about', about)],
         states={
             FIRST: [CallbackQueryHandler(learn, pattern='^' + str(ONE) + '$'),
                     CallbackQueryHandler(adaptation, pattern='^' + str(TWO) + '$'),
-                    CallbackQueryHandler(start_again, pattern='^' + str(THREE) + '$')]
+                    CallbackQueryHandler(start_again, pattern='^' + str(THREE) + '$'),
+                    CallbackQueryHandler(about, pattern='^' + str(FOUR) + '$')]
         },
         fallbacks=[CommandHandler('start', start)]
     )
